@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from sqlmodel import SQLModel
 from models.user import User
 from repositories.BaseRepository import BaseRepository
 
-class UserRepository(BaseRepository):
+class UserRepository(BaseRepository[User]):
     def __init__(self, db: Session):
         self.db = db
 

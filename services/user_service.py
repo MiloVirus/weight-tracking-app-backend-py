@@ -1,16 +1,17 @@
-from repositories.user_repository import UserRespository
+from repositories.BaseRepository import BaseRepository
+from models.user import User
 from schemas.user import UserCreate, UserResponse
 from models.user import User
 from fastapi import HTTPException
 
 
 class UserService:
-    def __init__(self, user_repository: UserRespository):
+    def __init__(self, user_repository: BaseRepository[User]):
         self.user_repository = user_repository
     
     def create_user(self, user_data: UserCreate) -> UserResponse:
         user = User(**user_data.model_dump()) 
-        created_user = self.user_repo.create(user)
+        created_user = self.user_repository.create(user)
         return UserResponse.model_validate(created_user) 
     
     def get_user(self, user_id:int) -> UserResponse | None:
