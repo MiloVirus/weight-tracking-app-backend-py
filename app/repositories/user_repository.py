@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from models.user import User
-from repositories.BaseRepository import BaseRepository
+from app.database.models.user import User
+from app.repositories.BaseRepository import BaseRepository
+from exceptions import UserNotFoundException
+from sqlalchemy.exc import SQLAlchemyError
 
 class UserRepository(BaseRepository[User]):
     def __init__(self, db: Session):
@@ -28,10 +30,17 @@ class UserRepository(BaseRepository[User]):
             self.db.refresh(user)
         return user
 
-    def delete(self, obj_id: int) -> bool:
-        user = self.get_by_id(obj_id)
-        if user:
-            self.db.delete(user)
+    def delete(self, obj_id: int) -> None:
+        try:
+            user = self.get_by_id(obj_id)
+            if not user:
+                raise UserNotFoundException(obj_id)
+
+            self.db.delete(user)  # Corrige el uso de delete
             self.db.commit()
-            return True
-        return False
+        except SQLAlchemyError as e:
+            self.db.rollback()
+            logger.error(f"DB error while deleting user {obj_id}: {str(e)}")
+            raise
+
+
